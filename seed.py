@@ -1,4 +1,5 @@
 from app import db
+from models import User, Movie, Show, Genre, Actor
 import requests
 
 TMDB_BASE_URL = 'https://api.themoviedb.org/3'
@@ -27,11 +28,33 @@ def get_movie(imdb_id):
 motion_picture_id_list = [get_imdb_id(motion_picture['id']) 
                             for motion_picture in TMDB_popular_response['results']]
 
+  
+db.drop_all()
+db.create_all()
+
 for movie_id in motion_picture_id_list:
     print(get_movie(movie_id)['Title'])
+    title = get_movie(movie_id)['Title']
+    release_date = get_movie(movie_id)['Released']
+    runtime = get_movie(movie_id)['Runtime']
+    # if runtime == 'N/A':
+    #     runtime = -1
+    # else:
+        # runtime = int(runtime)
+    genres = get_movie(movie_id)['Genre'].split()
+    directors = get_movie(movie_id)['Director'].split()
+    writers = get_movie(movie_id)['Writer'].split()
+    actors = get_movie(movie_id)['Actors']
+    poster = get_movie(movie_id)['Poster']
+    # rating_sources = [get_movie(movie_id)['Ratings']
+    #                     for source in ]
+    # if runtime < 59:
+    #     new_show = Show(title=title, release_date=release_date, runtime=runtime)
+    #     db.session.add(new_show)
+    new_movie = Movie(title=title, release_date=release_date, runtime=runtime, poster=poster)
+    db.session.add(new_movie)
 
-#print(motion_picture_id_list)   
+db.session.commit()
+100
 
 
-# db.drop_all()
-# db.create_all()
