@@ -3,7 +3,7 @@ import os
 from flask import Flask, render_template, request, flash, redirect, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 from models import connect_db, db, User, Movie, Show
-from forms import SignUpForm
+from forms import SignUpForm, LoginForm
 
 CURR_USER_KEY = "curr_user"
 
@@ -62,9 +62,31 @@ def signup():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    return ""
+    form = LoginForm()
+
+    if form.validate_on_submit():
+        user = User.authenticate(username=form.username.data, password=form.password.data)
+
+        if user:
+            session[CURR_USER_KEY] = user.id
+            return redirect('/')
+        else:
+            flash('Invalid username or password. Please try again')
+
+    return render_template('login.html', form=form)
 
 @app.route('/movies/<int:movie_id>')
 def users_show(movie_id):
     movie = Movie.query.get(movie_id)
     return render_template('details.html', movie=movie)
+
+@app.route('/logout')
+def logout():
+    if CURR_USER_KEY in session:
+        del session[CURR_USER_KEY]
+    return redirect('/')
+
+@app.route('/profile')
+def profile():
+    user = g.user
+    return render_template('profile.html', user=user)
