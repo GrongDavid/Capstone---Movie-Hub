@@ -34,13 +34,17 @@ db.create_all()
 
 for movie_id in motion_picture_id_list:
     print(get_movie(movie_id)['Title'])
+    type = get_movie(movie_id)['Type']
     title = get_movie(movie_id)['Title']
     release_date = get_movie(movie_id)['Released']
-    runtime = get_movie(movie_id)['Runtime']
-    # if runtime == 'N/A':
-    #     runtime = -1
-    # else:
-        # runtime = int(runtime)
+    runtime = get_movie(movie_id)['Runtime'].split()[0]
+    if runtime == 'N/A':
+        runtime = -1
+    else:
+        try:
+            runtime = int(runtime)
+        except:
+            runtime = -1
     genres = get_movie(movie_id)['Genre'].split()
     directors = get_movie(movie_id)['Director'].split()
     writers = get_movie(movie_id)['Writer'].split()
@@ -48,13 +52,13 @@ for movie_id in motion_picture_id_list:
     poster = get_movie(movie_id)['Poster']
     # rating_sources = [get_movie(movie_id)['Ratings']
     #                     for source in ]
-    # if runtime < 59:
-    #     new_show = Show(title=title, release_date=release_date, runtime=runtime)
-    #     db.session.add(new_show)
-    new_movie = Movie(title=title, release_date=release_date, runtime=runtime, poster=poster)
-    db.session.add(new_movie)
+    if type == 'movie':
+        new_movie = Movie(title=title, release_date=release_date, runtime=runtime, poster=poster)
+        db.session.add(new_movie)
+    else:
+        new_show = Show(title=title, release_date=release_date, runtime=runtime)
+        db.session.add(new_show)
 
 db.session.commit()
-100
 
 
