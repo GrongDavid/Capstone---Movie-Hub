@@ -4,8 +4,15 @@ from flask import Flask, render_template, request, flash, redirect, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 from models import connect_db, db, User, Movie, Show
 from forms import SignUpForm, LoginForm
+from utils import get_imdb_id, create_motion_picture
+import requests
 
 CURR_USER_KEY = "curr_user"
+
+TMDB_BASE_URL = 'https://api.themoviedb.org/3'
+TMDB_API_KEY = '2c8276507ce2b6c8c6617c916d6fa4a1'
+OMDB_BASE_URL = 'http://www.omdbapi.com'
+OMDB_API_KEY = 'a2f9bc6'
 
 app = Flask(__name__)
 
@@ -90,3 +97,21 @@ def logout():
 def profile():
     user = g.user
     return render_template('profile.html', user=user)
+
+@app.route('/movies/<movie_genre>')
+def popular(movie_genre):
+    existing_movies = Movie.query.all()
+    TMDB_response = requests.get(f'{TMDB_BASE_URL}/{movie_genre}/movie/list', params={'api_key': TMDB_API_KEY}).json()
+    motion_picture_ids = [get_imdb_id(motion_picture['id']) 
+                            for motion_picture in TMDB_response['results']]
+
+    for motion_picture_id in motion_picture_ids:
+        new_motion_picture = create_motion_picture(motion_picture_id)
+        for movie in existing_movies:
+            if movie.title is not new_motion_picture.title:
+                db.session.add(new_motion_picture)
+        
+    db.session.commit()
+    genre_movies = Movie.query.filter(movie_genre=movie_genre)
+    return render_template('movie_categories.html')
+
