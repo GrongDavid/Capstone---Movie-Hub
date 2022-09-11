@@ -20,7 +20,7 @@ def get_imdb_id(TMDB_movie_id):
 def get_movie(imdb_id):
     movie = requests.get(
         OMDB_BASE_URL,
-        params={'apikey': OMDB_API_KEY, 'i': imdb_id}
+        params={'apikey': OMDB_API_KEY, 'i': imdb_id, 'plot': 'full'}
     ).json()
 
     return movie
@@ -36,6 +36,7 @@ for movie_id in motion_picture_id_list:
     print(get_movie(movie_id)['Title'])
     type = get_movie(movie_id)['Type']
     title = get_movie(movie_id)['Title']
+    plot = get_movie(movie_id)['Plot']
     release_date = get_movie(movie_id)['Released']
     runtime = get_movie(movie_id)['Runtime'].split()[0]
     if runtime == 'N/A':
@@ -53,10 +54,10 @@ for movie_id in motion_picture_id_list:
     # rating_sources = [get_movie(movie_id)['Ratings']
     #                     for source in ]
     if type == 'movie':
-        new_movie = Movie(title=title, release_date=release_date, runtime=runtime, poster=poster)
+        new_movie = Movie(title=title, plot=plot, release_date=release_date, runtime=runtime, poster=poster)
         db.session.add(new_movie)
     else:
-        new_show = Show(title=title, release_date=release_date, runtime=runtime)
+        new_show = Show(title=title, plot=plot, release_date=release_date, runtime=runtime)
         db.session.add(new_show)
 
 db.session.commit()

@@ -1,6 +1,27 @@
 {% extends 'base.html' %}
 {% block content %}
-<h2>{{movie.title}}</h2>
+<div class="">
+    <div class="row no-gutters">
+        <div class="col-sm-auto no-gutters">
+            <img src="{{movie.poster}}" alt="">
+        </div>
+        <div class="col" style="color: white;">
+            <h5><b>Plot Details: </b>{{movie.plot}}</h5>
+            <div>
+                <p><b>Release Date: </b>{{movie.release_date}}</p>
+                {% if movie.runtime == '-1' %}
+                <p><b>Runtime: </b>'N/A'</p>
+                {% else %}
+                <p><b>Runtime: </b>{{movie.runtime}} min</p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col">
+
+        </div>
+    </div>
+</div>
+<h2 style="color: white;"><b>{{movie.title}}</b></h2>
 
 
 
