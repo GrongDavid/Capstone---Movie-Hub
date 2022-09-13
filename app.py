@@ -2,7 +2,7 @@ import os
 
 from flask import Flask, render_template, request, flash, redirect, session, g
 from flask_debugtoolbar import DebugToolbarExtension
-from models import connect_db, db, User, Movie, Show
+from models import connect_db, db, User, Movie, Genre
 from forms import SignUpForm, LoginForm
 from utils import get_imdb_id, create_motion_picture
 import requests
@@ -98,20 +98,16 @@ def profile():
     user = g.user
     return render_template('profile.html', user=user)
 
-@app.route('/movies/<movie_genre>')
-def popular(movie_genre):
-    existing_movies = Movie.query.all()
-    TMDB_response = requests.get(f'{TMDB_BASE_URL}/{movie_genre}/movie/list', params={'api_key': TMDB_API_KEY}).json()
-    motion_picture_ids = [get_imdb_id(motion_picture['id']) 
-                            for motion_picture in TMDB_response['results']]
+@app.route('/movies/genre/<int:genre_id>')
+def genre_list(genre_id):
+    movies_in_genre = requests.get(f'{TMDB_BASE_URL}/discover/movie', params={'api_key': TMDB_API_KEY, 'sort_by': 'popularity.dsc', 'with_genres': f'{genre_id}'}).json()
 
-    for motion_picture_id in motion_picture_ids:
-        new_motion_picture = create_motion_picture(motion_picture_id)
-        for movie in existing_movies:
-            if movie.title is not new_motion_picture.title:
-                db.session.add(new_motion_picture)
-        
+    movie_ids = [get_imdb_id(motion_picture['id']) 
+                            for motion_picture in movies_in_genre['results']]
+    for id in movie_ids:
+        create_motion_picture(id)
+
     db.session.commit()
-    genre_movies = Movie.query.filter(movie_genre=movie_genre)
-    return render_template('movie_categories.html')
+
+    return render_template('movie_categories.html', movies=movies_in_genre)
 

@@ -15,13 +15,13 @@ class User(db.Model):
     username = db.Column(db.Text, nullable=False, unique=True)
     password = db.Column(db.Text, nullable=False)
     image_url = db.Column(db.Text, default='https://t3.ftcdn.net/jpg/03/46/83/96/360_F_346839683_6nAPzbhpSkIpb8pmAwufkC7c5eD7wYws.jpg')
-    movies_watched = db.Column(db.Integer, db.ForeignKey('movies.id', ondelete='CASCADE'))
-    shows_watched = db.Column(db.Integer, db.ForeignKey('shows.id', ondelete='CASCADE'))
-    watch_list_movies = db.Column(db.Integer, db.ForeignKey('movies.id', ondelete='CASCADE'))
-    watch_list_shows = db.Column(db.Integer, db.ForeignKey('shows.id', ondelete='CASCADE'))
-    favorite_movies = db.Column(db.Integer, db.ForeignKey('movies.id', ondelete='CASCADE'))
-    favorite_shows = db.Column(db.Integer, db.ForeignKey('shows.id', ondelete='CASCADE'))
+    movies_watched_id = db.Column(db.Integer, db.ForeignKey('movies.id', ondelete='CASCADE'))
+    favorite_movie_id = db.Column(db.Integer, db.ForeignKey('movies.id', ondelete='CASCADE'))
+    
+    movies_watched = db.relationship('Movie', backref='users_watched', foreign_keys=[movies_watched_id])
+    favorite_movies = db.relationship('Movie', backref='users_favorited', foreign_keys=[favorite_movie_id])
 
+    
     @classmethod
     def signup(cls, username, password, image_url):
         hashed_pwd = bcrypt.generate_password_hash(password).decode('UTF-8')
@@ -52,49 +52,39 @@ class Movie(db.Model):
     title = db.Column(db.Text, nullable=False)
     release_date = db.Column(db.Text)
     runtime = db.Column(db.Text)
-    # genres = db.Column(db.Integer, db.ForeignKey('genres.id'), nullable=False)
-    # directors = db.Column(db.Integer, db.ForeignKey('directors.id'), nullable=False)
-    # writers = db.Column(db.Integer, db.ForeignKey('writers.id'))
-    # actors = db.Column(db.Integer, db.ForeignKey('actors.id'))
-    # rating_source = db.Column(db.Integer, db.ForeignKey('rating_sources.id'))
     plot = db.Column(db.Text)
     awards = db.Column(db.Text)
     poster = db.Column(db.Text, nullable=False, default='https://img.myloview.com/posters/letter-n-a-icon-logo-design-concept-400-168449363.jpg')
     rating = db.Column(db.Text)
     earnings = db.Column(db.Integer)
-    
-class Show(db.Model):
-    __tablename__ = 'shows'
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    title = db.Column(db.Text, nullable=False)
-    release_date = db.Column(db.Text)
-    runtime = db.Column(db.Integer)
-    # genres = db.Column(db.Integer, db.ForeignKey('genres.id', ondelete='CASCADE'), nullable=False)
-    # directors = db.Column(db.Integer, db.ForeignKey('directors.id', ondelete='CASCADE'), nullable=False)
-    # writers = db.Column(db.Integer, db.ForeignKey('writers.id', ondelete='CASCADE'))
-    # rating_source = db.Column(db.Integer, db.ForeignKey('rating_sources.id', ondelete='CASCADE'))
-    plot = db.Column(db.Text)
-    awards = db.Column(db.Text)
-    poster = db.Column(db.Text, nullable=False, default='https://img.myloview.com/posters/letter-n-a-icon-logo-design-concept-400-168449363.jpg')
-    rating = db.Column(db.Text)
-    earnings = db.Column(db.Integer)
+    genres = db.relationship('Genre', secondary='movies_genres', backref='movies')
+    directors = db.relationship('Director', backref='movies')
+    writers = db.relationship('Writer', backref='movies')
+    actors = db.relationship('Actor', backref='movies')
+    # rating_sources = db.relationship('ratingSource', backref='movies')
+    
 
 class Genre(db.Model):
     __tablename__ = 'genres'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.Text, nullable=False)
-    movie_ids = db.Column(db.Integer, db.ForeignKey('movies.id'))
-    show_ids = db.Column(db.Integer, db.ForeignKey('shows.id'))
+    genre_id = db.Column(db.Text)
 
+class MovieGenre(db.Model):
+    __tablename__ = 'movies_genres'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    movie_id = db.Column(db.Integer, db.ForeignKey('movies.id'))
+    genre_id = db.Column(db.Integer, db.ForeignKey('genres.id'))
+    
 class Director(db.Model):
     __tablename__ = 'directors'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.Text, nullable=False)
     movie_ids = db.Column(db.Integer, db.ForeignKey('movies.id'))
-    show_ids = db.Column(db.Integer, db.ForeignKey('shows.id'))
 
 class Writer(db.Model):
     __tablename__ = 'writers'
@@ -102,7 +92,6 @@ class Writer(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.Text, nullable=False)
     movie_ids = db.Column(db.Integer, db.ForeignKey('movies.id'))
-    show_ids = db.Column(db.Integer, db.ForeignKey('shows.id'))
 
 class Actor(db.Model):
     __tablename__ = 'actors'
@@ -110,7 +99,6 @@ class Actor(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.Text, nullable=False)
     movie_ids = db.Column(db.Integer, db.ForeignKey('movies.id'))
-    show_ids = db.Column(db.Integer, db.ForeignKey('shows.id'))
 
 class ratingSource(db.Model):
     __tablename__ = 'rating_sources'

@@ -15,6 +15,11 @@
                 {% else %}
                 <p><b>Runtime: </b>{{movie.runtime}} min</p>
                 {% endif %}
+                <p>Genres: 
+                    {% for genre in movie.genres %}
+                    <a href="/movies/genre/{{genre.genre_id}}">{{genre.name}}</a>
+                    {% endfor %}
+                </p>
             </div>
         </div>
         <div class="col">
