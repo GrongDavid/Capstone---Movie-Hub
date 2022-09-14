@@ -34,7 +34,7 @@
                     </li>
                 </ul>
                 <ul class="navbar-nav me-right mb-2 mb-lg-0">
-                    {% if not user %}
+                    {% if not g.user %}
                     <li class="nav-item">
                         <a class="nav-link active" href="/login">Login</a>
                     </li>
@@ -51,10 +51,10 @@
                     <input class="form-control me-2" type="search" placeholder="Search Titles" aria-label="Search">
                     <button class="btn btn-outline-light" type="submit">Search</button>
                   </form>
-                {% if user %}
+                {% if g.user %}
                 <ul class="navbar-nav me-right mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link active" href="/profile">Profile</a>
+                        <a class="nav-link active" href="/users/profile">Profile</a>
                     </li>
                 </ul>
                 {% endif %}

@@ -3,7 +3,7 @@ import os
 from flask import Flask, render_template, request, flash, redirect, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 from models import connect_db, db, User, Movie, Genre
-from forms import SignUpForm, LoginForm
+from forms import SignUpForm, LoginForm, EditForm
 from utils import get_imdb_id, create_motion_picture
 import requests
 
@@ -83,7 +83,7 @@ def login():
     return render_template('login.html', form=form)
 
 @app.route('/movies/<int:movie_id>')
-def users_show(movie_id):
+def movie_details(movie_id):
     movie = Movie.query.get(movie_id)
     return render_template('details.html', movie=movie)
 
@@ -93,7 +93,7 @@ def logout():
         del session[CURR_USER_KEY]
     return redirect('/')
 
-@app.route('/profile')
+@app.route('/users/profile')
 def profile():
     user = g.user
     return render_template('profile.html', user=user)
@@ -111,3 +111,66 @@ def genre_list(genre_id):
 
     return render_template('movie_categories.html', movies=movies_in_genre)
 
+@app.route('/users/edit', methods=['GET', 'POST'])
+def edit_profile():
+    user = g.user
+
+    if not user:
+        flash("access unauthorized.")
+        return redirect('/')
+    form = EditForm(obj=user)
+
+    if form.validate_on_submit():
+        if User.authenticate(user.username, form.password.data):
+            user.username = form.username.data
+            user.image_url = form.image_url.data
+
+            db.session.commit()
+            return redirect(f'/users/profile')
+        flash('Incorrect password, please try again')
+    
+    return render_template('edit.html', form=form, user_id=user.id)
+
+@app.route('/movies/add/watched/<int:movie_id>')
+def add_to_watched(movie_id):
+    user = g.user
+    if not user:
+        flash('You must be logged in to use this feature')
+        return None
+
+    movie = Movie.query.get(movie_id)
+    user.movies_watched.append(movie)
+    db.session.commit()
+    return redirect(f'/movies/{movie_id}')
+
+@app.route('/movies/add/favorites/<int:movie_id>')
+def add_to_favorites(movie_id):
+    user = g.user
+    if not user:
+        flash('You must be logged in to use this feature')
+        return None
+
+    movie = Movie.query.get(movie_id)
+    user.movies_watched.append(movie)
+    db.session.commit()
+    return redirect(f'/movies/{movie_id}')
+
+@app.route('/movies/watched')
+def watched():
+    user = g.user
+    if not user:
+        flash('You must be logged in to use this feature')
+        return None
+    
+    watched_movies = user.movies_watched
+    return render_template('watched.html', user=user, movies=watched_movies)
+
+@app.route('/movies/favorites')
+def favorites():
+    user = g.user
+    if not user:
+        flash('You must be logged in to use this feature')
+        return None
+    
+    favorite_movies = user.favorite_movies
+    return render_template('watched.html', user=user, movies=favorite_movies)
