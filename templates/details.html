@@ -21,10 +21,29 @@
                 {% else %}
                 <p><b>Runtime: </b>{{movie.runtime}} min</p>
                 {% endif %}
-                <p>Genres: 
+                <p><b>Genres: 
                     {% for genre in movie.genres %}
                     <a href="/movies/genre/{{genre.genre_id}}">{{genre.name}}</a>
                     {% endfor %}
+                    </b>
+                </p>
+                <p><b>Directors: 
+                    {% for director in movie.directors %}
+                    <a href="/movies/director/{{director.id}}">{{director.name}}</a>
+                    {% endfor %}
+                    </b>
+                </p>
+                <p><b>Actors: 
+                    {% for actor in movie.actors %}
+                    <a href="/movies/actor/{{actor.id}}">{{actor.name}},</a>
+                    {% endfor %}
+                    </b>
+                </p>
+                <p><b>Writers: 
+                    {% for writer in movie.writers %}
+                    <a href="/movies/writer/{{writer.id}}">{{writer.name}},</a>
+                    {% endfor %}
+                    </b>
                 </p>
             </div>
         </div>

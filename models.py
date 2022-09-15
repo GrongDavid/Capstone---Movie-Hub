@@ -18,8 +18,8 @@ class User(db.Model):
     # movies_watched_id = db.Column(db.Integer, db.ForeignKey('movies.id', ondelete='CASCADE'))
     # favorite_movie_id = db.Column(db.Integer, db.ForeignKey('movies.id', ondelete='CASCADE'))
     
-    movies_watched = db.relationship('Movie', backref='users_watched')
-    favorite_movies = db.relationship('Movie', backref='users_favorited')
+    movies_watched = db.relationship('Movie', secondary='users_watched_movies', backref='users_watched')
+    favorite_movies = db.relationship('Movie', secondary='users_favorited_movies', backref='users_favorited')
 
     
     @classmethod
@@ -57,12 +57,11 @@ class Movie(db.Model):
     poster = db.Column(db.Text, nullable=False, default='https://img.myloview.com/posters/letter-n-a-icon-logo-design-concept-400-168449363.jpg')
     rating = db.Column(db.Text)
     earnings = db.Column(db.Integer)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
     genres = db.relationship('Genre', secondary='movies_genres', backref='movies')
-    directors = db.relationship('Director', backref='movies')
-    writers = db.relationship('Writer', backref='movies')
-    actors = db.relationship('Actor', backref='movies')
+    directors = db.relationship('Director', secondary='movies_directors', backref='movies')
+    writers = db.relationship('Writer', secondary='movies_writers', backref='movies')
+    actors = db.relationship('Actor', secondary='movies_actors', backref='movies')
     # rating_sources = db.relationship('ratingSource', backref='movies')
     
 
@@ -73,32 +72,25 @@ class Genre(db.Model):
     name = db.Column(db.Text, nullable=False)
     genre_id = db.Column(db.Text)
 
-class MovieGenre(db.Model):
-    __tablename__ = 'movies_genres'
-
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    movie_id = db.Column(db.Integer, db.ForeignKey('movies.id'))
-    genre_id = db.Column(db.Integer, db.ForeignKey('genres.id'))
-    
 class Director(db.Model):
     __tablename__ = 'directors'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.Text, nullable=False)
-    movie_ids = db.Column(db.Integer, db.ForeignKey('movies.id'))
+    name = db.Column(db.Text, nullable=False, unique=True)
+    movie_id = db.Column(db.Integer, db.ForeignKey('movies.id'))
 
 class Writer(db.Model):
     __tablename__ = 'writers'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.Text, nullable=False)
-    movie_ids = db.Column(db.Integer, db.ForeignKey('movies.id'))
+    name = db.Column(db.Text, nullable=False, unique=True)
+    movie_id = db.Column(db.Integer, db.ForeignKey('movies.id'))
 
 class Actor(db.Model):
     __tablename__ = 'actors'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.Text, nullable=False)
+    name = db.Column(db.Text, nullable=False, unique=True)
     movie_ids = db.Column(db.Integer, db.ForeignKey('movies.id'))
 
 class ratingSource(db.Model):
@@ -106,6 +98,42 @@ class ratingSource(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.Text, nullable=False)
+
+class MovieGenre(db.Model):
+    __tablename__ = 'movies_genres'
+
+    movie_id = db.Column(db.Integer, db.ForeignKey('movies.id'), primary_key=True)
+    genre_id = db.Column(db.Integer, db.ForeignKey('genres.id'), primary_key=True)
+
+class UserWatchMovie(db.Model):
+    __tablename__ = 'users_watched_movies'
+
+    movie_id = db.Column(db.Integer, db.ForeignKey('movies.id'), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+
+class UserFavoriteMovie(db.Model):
+    __tablename__ = 'users_favorited_movies'
+
+    movie_id = db.Column(db.Integer, db.ForeignKey('movies.id'), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+
+class MovieDirector(db.Model):
+    __tablename__ = 'movies_directors'
+
+    movie_id = db.Column(db.Integer, db.ForeignKey('movies.id'), primary_key=True)
+    director_id = db.Column(db.Integer, db.ForeignKey('directors.id'), primary_key=True)
+
+class MovieActor(db.Model):
+    __tablename__ = 'movies_actors'
+
+    movie_id = db.Column(db.Integer, db.ForeignKey('movies.id'), primary_key=True)
+    actor_id = db.Column(db.Integer, db.ForeignKey('actors.id'), primary_key=True)
+
+class MovieWriter(db.Model):
+    __tablename__ = 'movies_writers'
+
+    movie_id = db.Column(db.Integer, db.ForeignKey('movies.id'), primary_key=True)
+    writer_id = db.Column(db.Integer, db.ForeignKey('writers.id'), primary_key=True)
 
 
 

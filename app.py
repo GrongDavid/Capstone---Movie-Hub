@@ -2,7 +2,7 @@ import os
 
 from flask import Flask, render_template, request, flash, redirect, session, g
 from flask_debugtoolbar import DebugToolbarExtension
-from models import connect_db, db, User, Movie, Genre
+from models import connect_db, db, User, Movie, Genre, Director, Actor, Writer
 from forms import SignUpForm, LoginForm, EditForm
 from utils import get_imdb_id, create_motion_picture
 import requests
@@ -151,7 +151,7 @@ def add_to_favorites(movie_id):
         return None
 
     movie = Movie.query.get(movie_id)
-    user.movies_watched.append(movie)
+    user.favorite_movies.append(movie)
     db.session.commit()
     return redirect(f'/movies/{movie_id}')
 
@@ -173,4 +173,25 @@ def favorites():
         return None
     
     favorite_movies = user.favorite_movies
-    return render_template('watched.html', user=user, movies=favorite_movies)
+    return render_template('favorites.html', user=user, movies=favorite_movies)
+
+@app.route('/movies/director/<int:director_id>')
+def show_directors_movies(director_id):
+    director = Director.query.get(director_id)
+    directors_movies = director.movies
+
+    return render_template('director_movies.html', director=director, movies=directors_movies)
+
+@app.route('/movies/actor/<int:actor_id>')
+def show_actors_movies(actor_id):
+    actor = Actor.query.get(actor_id)
+    actors_movies = actor.movies
+
+    return render_template('actor_movies.html', actor=actor, movies=actors_movies)
+
+@app.route('/movies/writer/<int:writer_id>')
+def show_writers_movies(writer_id):
+    writer = Writer.query.get(writer_id)
+    writers_movies = writer.movies
+
+    return render_template('writer_movies.html', writer=writer, movies=writers_movies)
