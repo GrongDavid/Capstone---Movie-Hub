@@ -49,7 +49,7 @@ class Movie(db.Model):
     __tablename__ = 'movies'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    title = db.Column(db.Text, nullable=False)
+    title = db.Column(db.Text, nullable=False, unique=True)
     release_date = db.Column(db.Text)
     runtime = db.Column(db.Text)
     plot = db.Column(db.Text)

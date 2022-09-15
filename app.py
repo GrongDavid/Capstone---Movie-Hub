@@ -2,10 +2,11 @@ import os
 
 from flask import Flask, render_template, request, flash, redirect, session, g
 from flask_debugtoolbar import DebugToolbarExtension
-from models import connect_db, db, User, Movie, Genre, Director, Actor, Writer
+from models import connect_db, db, User, Movie, Genre, Director, Actor, Writer, MovieGenre
 from forms import SignUpForm, LoginForm, EditForm
 from utils import get_imdb_id, create_motion_picture
-import requests
+import requests, time
+from sqlalchemy.exc import IntegrityError
 
 CURR_USER_KEY = "curr_user"
 
@@ -98,18 +99,43 @@ def profile():
     user = g.user
     return render_template('profile.html', user=user)
 
-@app.route('/movies/genre/<int:genre_id>')
+@app.route('/movies/genre/<genre_id>')
 def genre_list(genre_id):
-    movies_in_genre = requests.get(f'{TMDB_BASE_URL}/discover/movie', params={'api_key': TMDB_API_KEY, 'sort_by': 'popularity.dsc', 'with_genres': f'{genre_id}'}).json()
+    start = time.time()
+    session[genre_id] = ''
+    if len(session[genre_id]) == 0:
+        movies_in_genre = requests.get(f'{TMDB_BASE_URL}/discover/movie', 
+                                    params={'api_key': TMDB_API_KEY, 'sort_by': 'popularity.dsc', 'with_genres': f'{genre_id}'}).json()
 
-    movie_ids = [get_imdb_id(motion_picture['id']) 
+        movie_ids = [get_imdb_id(motion_picture['id']) 
+                            for motion_picture in movies_in_genre['results']]
+    else:
+        movies_in_genre = session[genre_id]
+        movie_ids = [get_imdb_id(motion_picture['id']) 
                             for motion_picture in movies_in_genre['results']]
     for id in movie_ids:
-        create_motion_picture(id)
+        try:
+            create_motion_picture(id)
+        except Exception:
+            db.session.rollback()
+            continue
 
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
 
-    return render_template('movie_categories.html', movies=movies_in_genre)
+    movies = Movie.query.all()
+    movie_list = []
+    for movie in movies:
+        for genre in movie.genres:
+            print(genre.genre_id)
+            if genre.genre_id == genre_id:
+                movie_list.append(movie)
+    end = time.time()
+    print(end - start)
+
+    return render_template('movie_categories.html', movies=movie_list)
 
 @app.route('/users/edit', methods=['GET', 'POST'])
 def edit_profile():
@@ -195,3 +221,21 @@ def show_writers_movies(writer_id):
     writers_movies = writer.movies
 
     return render_template('writer_movies.html', writer=writer, movies=writers_movies)
+
+@app.route('/movies/search', methods=['GET', 'POST'])
+def movie_search():
+    title = request.form.get('title')
+    movie_request = requests.get(OMDB_BASE_URL, params={'apikey': OMDB_API_KEY, 't': title}).json()
+    movie_id = movie_request['imdbID']
+
+    try:
+        create_motion_picture(movie_id)
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+    movie = Movie.query.filter(Movie.title.ilike(f'%{title}%')).first()
+    if movie is None:
+        flash('Could not find movie, try again')
+    print(movie)
+
+    return render_template('details.html', movie=movie)
