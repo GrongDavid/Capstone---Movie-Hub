@@ -99,7 +99,7 @@ def profile():
     user = g.user
     return render_template('profile.html', user=user)
 
-@app.route('/movies/genre/<genre_id>')
+@app.route('/movies/genre/<string:genre_id>')
 def genre_list(genre_id):
     start = time.time()
     session[genre_id] = ''
