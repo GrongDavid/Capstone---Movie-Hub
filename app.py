@@ -108,8 +108,9 @@ def genre_list(genre_id):
         create_motion_picture(id)
 
     db.session.commit()
+    movies = Movie.query.filter(Movie.genres == genre_id)
 
-    return render_template('movie_categories.html', movies=movies_in_genre)
+    return render_template('movie_categories.html', movies=movies)
 
 @app.route('/users/edit', methods=['GET', 'POST'])
 def edit_profile():
