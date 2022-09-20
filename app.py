@@ -6,9 +6,9 @@ from models import connect_db, db, User, Movie, Genre, Director, Actor, Writer, 
 from forms import SignUpForm, LoginForm, EditForm
 from utils import get_imdb_id, create_motion_picture
 import requests, time
-from sqlalchemy.exc import IntegrityError
 
 CURR_USER_KEY = "curr_user"
+cur_rsp_page = 1
 
 TMDB_BASE_URL = 'https://api.themoviedb.org/3'
 TMDB_API_KEY = '2c8276507ce2b6c8c6617c916d6fa4a1'
@@ -39,11 +39,11 @@ def add_user_to_g():
 @app.route('/')
 def home():
     movies = Movie.query.all()
+    user = g.user
     if not g.user:
         return render_template('default_home.html', movies=movies)
 
-    user = g.user
-    return render_template('logged_home.html', user=user, movies=movies)
+    return render_template('default_home.html', user=user, movies=movies)
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -239,3 +239,22 @@ def movie_search():
     print(movie)
 
     return render_template('details.html', movie=movie)
+
+@app.route('/movies/more')
+def load_more_movies():
+    global cur_rsp_page
+    cur_rsp_page += 1
+    TMDB_popular_response = requests.get(f'{TMDB_BASE_URL}/movie/popular', params={'api_key': TMDB_API_KEY, 'page': cur_rsp_page}).json()
+
+    movie_ids = [get_imdb_id(motion_picture['id']) 
+                            for motion_picture in TMDB_popular_response['results']]
+
+    for id in movie_ids:
+        try:
+            create_motion_picture(id)
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+
+    db.session.commit()
+    return redirect('/')

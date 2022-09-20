@@ -1,13 +1,17 @@
 {% extends 'base.html' %}
 {% block content %}
 
+<div>
 {% for movie in movies %}
     <a href="/movies/{{movie.id}}">
         <img src="{{movie.poster}}" class="img-fluid rounded mx-auto"
             style="height: 400px; width: 300px; margin: 10px;"></li>
     </a>
 {% endfor %}
-
+</div>
+<div class="container text-center">
+    <a class="btn btn-primary" type="submit" href="/movies/more">Load More</a>
+</div>
 
 
 
