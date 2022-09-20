@@ -1,11 +1,15 @@
 {% extends 'base.html'%}
 {% block content %}
-<div style="color: white">
-    <h4>{{user.username}}</h4>
-    <img src="{{user.image_url}}" alt="">
+<div class="container" style="color: white">
+    <div class="row">
+        <div class="col-sm-4">
+            <h4>{{user.username}}</h4>
+            <img src="{{user.image_url}}" alt="">
+            <a class="btn btn-success" href="/movies/watched">Watched Movies</a>
+            <a class="btn btn-warning" href="/movies/favorites">Favorited Movies</a>
+            <a class="btn btn-primary" href="/users/edit">Edit Profile</a>
+        </div>
+    </div>
 </div>
-<a class="btn btn-success" href="/movies/watched">Watched Movies</a>
-<a class="btn btn-warning" href="/movies/favorites">Favorited Movies</a>
-<a class="btn btn-primary" href="/users/edit">Edit Profile</a>
 
 {% endblock %}
