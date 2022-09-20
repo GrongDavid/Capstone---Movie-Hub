@@ -75,6 +75,8 @@ def create_motion_picture(id):
     writers = set(get_movie(id)['Writer'].split(','))
     actors = set(get_movie(id)['Actors'].split(','))
     poster = get_movie(id)['Poster']
+    earnings = get_movie(id)['BoxOffice']
+    imdb_rating = get_movie(id)['imdbRating']
 
     if runtime == 'N/A':
         runtime = -1
@@ -84,7 +86,7 @@ def create_motion_picture(id):
         except Exception:
             runtime = -1
 
-    new_movie = Movie(title=title, plot=plot, release_date=release_date, runtime=runtime, poster=poster)
+    new_movie = Movie(title=title, plot=plot, release_date=release_date, runtime=runtime, poster=poster, earnings=earnings, imdb_rating=imdb_rating)
     for name in genre_names:
         for genre in all_genres:
             if name == genre.name:

@@ -15,8 +15,6 @@ class User(db.Model):
     username = db.Column(db.Text, nullable=False, unique=True)
     password = db.Column(db.Text, nullable=False)
     image_url = db.Column(db.Text, default='https://t3.ftcdn.net/jpg/03/46/83/96/360_F_346839683_6nAPzbhpSkIpb8pmAwufkC7c5eD7wYws.jpg')
-    # movies_watched_id = db.Column(db.Integer, db.ForeignKey('movies.id', ondelete='CASCADE'))
-    # favorite_movie_id = db.Column(db.Integer, db.ForeignKey('movies.id', ondelete='CASCADE'))
     
     movies_watched = db.relationship('Movie', secondary='users_watched_movies', backref='users_watched')
     favorite_movies = db.relationship('Movie', secondary='users_favorited_movies', backref='users_favorited')
@@ -56,7 +54,8 @@ class Movie(db.Model):
     awards = db.Column(db.Text)
     poster = db.Column(db.Text, nullable=False, default='https://img.myloview.com/posters/letter-n-a-icon-logo-design-concept-400-168449363.jpg')
     rating = db.Column(db.Text)
-    earnings = db.Column(db.Integer)
+    earnings = db.Column(db.Text)
+    imdb_rating = db.Column(db.Text)
 
     genres = db.relationship('Genre', secondary='movies_genres', backref='movies')
     directors = db.relationship('Director', secondary='movies_directors', backref='movies')

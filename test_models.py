@@ -13,7 +13,7 @@ class ModelTestCase(TestCase):
         User.query.delete()
         Movie.query.delete()
 
-        user1 = User.signup('user1', 'abc123')
+        user1 = User.signup('user1', 'abc123', None)
         user1.id = 1
         db.session.commit()
 
@@ -29,6 +29,7 @@ class ModelTestCase(TestCase):
 
     def test_user_model(self):
         user = User(username='testuser', password='abc123')
+        user.id = 2
         db.session.add(user)
         db.session.commit()
         
@@ -37,11 +38,11 @@ class ModelTestCase(TestCase):
         self.assertEqual(len(user.favorite_movies), 0)
 
     def test_signup(self):
-        user = User(username='testuser', password='abc123')
-        user.id = 2
+        user = User.signup('testuser', 'abc123', None)
+        user.id = 3
         db.session.commit()
 
-        user = User.query.get(2)
+        user = User.query.get(3)
 
         self.assertEqual(user.username, 'testuser')
 
@@ -54,24 +55,19 @@ class ModelTestCase(TestCase):
 
     def test_movie(self):
         movie1 = Movie(title='test', release_date='test_date', runtime='105', 
-                        plot='A test movie that tests', earnings='104mil')
+                        plot='A test movie that tests', earnings='104')
         movie1.id = 1
         db.session.add(movie1)
         db.session.commit()
 
-        movie = Movie.get(1)
+        movie = Movie.query.get(1)
 
-    def test_genre(self):
-        pass
+        self.assertEqual(movie.title, 'test')
+        self.assertEqual(movie.release_date, 'test_date')
+        self.assertEqual(movie.runtime, '105')
+        self.assertEqual(movie.plot, 'A test movie that tests')
+        self.assertEqual(movie.earnings, '104')
 
-    def test_director(self):
-        pass
-
-    def test_actor(self):
-        pass
-
-    def test_writer(self):
-        pass
 
 
 
